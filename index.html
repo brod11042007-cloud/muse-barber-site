@@ -35,14 +35,12 @@
       text-align: center;
     }
 
-    /* LOGO */
     .logo {
       font-size: 22px;
       font-weight: bold;
       letter-spacing: 2px;
     }
 
-    /* HERO */
     .hero {
       background: #ffffff;
       height: 100vh;
@@ -52,7 +50,6 @@
       align-items: center;
     }
 
-    /* Fade animation */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -70,7 +67,6 @@
       letter-spacing: 3px;
       margin-bottom: 10px;
       color: black;
-
       opacity: 0;
       animation: fadeIn 1.5s ease forwards;
     }
@@ -94,13 +90,11 @@
       text-decoration: none;
       margin-top: 20px;
       display: inline-block;
-
       opacity: 0;
       animation: fadeIn 1.5s ease forwards;
       animation-delay: 1.5s;
     }
 
-    /* SERVICES */
     .services {
       background: white;
     }
@@ -113,7 +107,6 @@
       border-radius: 8px;
     }
 
-    /* BOOKING */
     .booking form {
       max-width: 400px;
       margin: auto;
@@ -144,6 +137,12 @@
       cursor: pointer;
     }
 
+    #msg {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #c59d5f;
+    }
+
     footer {
       background: #111;
       color: white;
@@ -164,7 +163,6 @@
   </nav>
 </header>
 
-<!-- HOME -->
 <section id="home" class="hero">
   <div class="hero-logo">Muse Barber Co</div>
   <h1>Precision Cuts. Modern Style.</h1>
@@ -172,7 +170,6 @@
   <a href="#booking" class="btn">Book Now</a>
 </section>
 
-<!-- SERVICES -->
 <section id="services" class="services">
   <h2>Our Services</h2>
 
@@ -195,14 +192,8 @@
     <h3>Hot Towel Shave</h3>
     <p>Relaxing premium shave experience.</p>
   </div>
-
-  <div class="service-box">
-    <h3>Custom Styles</h3>
-    <p>Mohawks and creative designs.</p>
-  </div>
 </section>
 
-<!-- BOOKING -->
 <section id="booking" class="booking">
   <h2>Book an Appointment</h2>
 
@@ -218,8 +209,8 @@
       <label><input type="checkbox" name="service" value="Shave"> Shave</label>
     </div>
 
-    <input type="date" required>
-    <input type="time" required>
+    <input type="date" id="date" required>
+    <input type="time" id="time" required>
 
     <button type="submit">Confirm Booking</button>
   </form>
@@ -232,14 +223,65 @@
 </footer>
 
 <script>
-document.getElementById("form").addEventListener("submit", function(e){
+const form = document.getElementById("form");
+const dateInput = document.getElementById("date");
+const timeInput = document.getElementById("time");
+const msg = document.getElementById("msg");
+
+const hours = {
+  0: null,
+  1: null,
+  2: { open: "09:00", close: "18:00" },
+  3: { open: "09:00", close: "18:00" },
+  4: { open: "09:00", close: "18:00" },
+  5: { open: "09:00", close: "18:00" },
+  6: { open: "08:00", close: "15:00" }
+};
+
+dateInput.addEventListener("change", () => {
+  const selectedDate = new Date(dateInput.value);
+  const day = selectedDate.getDay();
+
+  if (!hours[day]) {
+    msg.innerText = "We are closed on this day. Please select Tuesday–Saturday.";
+    dateInput.value = "";
+    timeInput.value = "";
+    return;
+  }
+
+  timeInput.min = hours[day].open;
+  timeInput.max = hours[day].close;
+  msg.innerText = `Available hours: ${hours[day].open} - ${hours[day].close}`;
+});
+
+form.addEventListener("submit", function(e) {
   e.preventDefault();
 
-  const selected = Array.from(document.querySelectorAll('input[name="service"]:checked'))
-    .map(el => el.value);
+  const selectedDate = new Date(dateInput.value);
+  const day = selectedDate.getDay();
 
-  document.getElementById("msg").innerText =
-    "Booked: " + (selected.length ? selected.join(", ") : "No services selected") +
+  if (!hours[day]) {
+    msg.innerText = "Booking unavailable on closed days.";
+    return;
+  }
+
+  const selectedTime = timeInput.value;
+  const { open, close } = hours[day];
+
+  if (selectedTime < open || selectedTime > close) {
+    msg.innerText = `Bookings allowed only between ${open} and ${close}`;
+    return;
+  }
+
+  const selected = Array.from(
+    document.querySelectorAll('input[name="service"]:checked')
+  ).map(el => el.value);
+
+  msg.innerText =
+    "Booked: " +
+    (selected.length ? selected.join(", ") : "No services selected") +
+    " on " + dateInput.value +
+    " at " + selectedTime +
     ". We'll contact you soon.";
 });
 </script>
